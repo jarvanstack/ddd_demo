@@ -7,12 +7,12 @@ app_name:=$(shell basename $(make_dir))
 .PHONY: all
 all: gen build run
 
-## init: init project, create dadabase import sql
+## init: Init project, create dadabase and import sql
 .PHONY: init
 init:
 	cd job/init_mysql/ && go run . && cd $(make_dir)
 
-## gen: Gen protobuf files.
+## gen: Gemerate protobuf files.
 .PHONY: gen
 gen:
 	cd internal/interfaces/rpc/proto_file/ && \
@@ -36,8 +36,8 @@ run:
 	./bin/$(app_name) --config ./config.yaml
 
 ## help: Show this help info.
-help: Makefile
 .PHONY: help
+help: Makefile
 	@printf "\nUsage: make <TARGETS> <OPTIONS> ...\n\nTargets:\n"
 	@sed -n 's/^##//p' $< | column -t -s ':' | sed -e 's/^/ /'
 	@echo "$$USAGE_OPTIONS"
