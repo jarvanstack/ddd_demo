@@ -15,7 +15,7 @@
 
 ## 目录结构
 
-```bash
+```go
 ├── application    // 应用层 (领域核心) 类似MVC中无状态的service
 ├── domain         // 领域层 (领域核心) 封装数据校验和无状态的逻辑
 │   ├── auth_domain.go       // 验证领域对象
@@ -70,6 +70,6 @@
 docker-compose up -d
 # 准备数据库 (创建数据库, 创建表)
 make init
-# 启动项目 (gen -> build -> run)
+# 启动项目
 make
 ```
