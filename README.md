@@ -66,8 +66,10 @@
 ## 项目启动
 
 ```bash
-# 准备环境 (启动mysql, redis -> 新建数据库 -> 建表)
-make prepare
+# 准备环境 (启动mysql, redis)
+docker-compose up -d
+# 准备数据库 (创建数据库, 创建表)
+make init
 # 启动项目 (gen -> build -> run)
-make run
+make
 ```

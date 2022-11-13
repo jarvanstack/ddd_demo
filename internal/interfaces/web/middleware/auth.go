@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"ddd_demo/interfaces/web/response"
 	"ddd_demo/internal/application"
+	"ddd_demo/internal/interfaces/web/response"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
