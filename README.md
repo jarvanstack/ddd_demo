@@ -53,8 +53,21 @@
 ├── main.go         // 启动类
 ```
 
-目录结构代表的部分如下图所示:
+参考架构模型如下图所示:
 
 ![洋葱模型](https://markdown-1304103443.cos.ap-guangzhou.myqcloud.com/2022-02-0420221111220700.png)
 
-## 执行顺序
+## 环境准备
+
+* golang
+* docker
+* protobuf
+
+## 项目启动
+
+```bash
+# 准备环境 (启动mysql, redis -> 新建数据库 -> 建表)
+make prepare
+# 启动项目 (gen -> build -> run)
+make run
+```
