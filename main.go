@@ -7,6 +7,7 @@ import (
 	"ddd_demo/infrastructure/tool/logs"
 	"ddd_demo/infrastructure/tool/signals"
 	"ddd_demo/interfaces"
+	"ddd_demo/interfaces/rpc"
 	"ddd_demo/interfaces/web"
 )
 
@@ -37,6 +38,7 @@ func NewServers(cfg *config.SugaredConfig) interfaces.ServerInterface {
 
 	// 初始化 WebServer
 	servers = append(servers, web.NewWebServer(cfg, apps))
+	servers = append(servers, rpc.NewRpcServer(cfg, apps))
 
 	return &interfaces.Servers{
 		Servers: servers,
