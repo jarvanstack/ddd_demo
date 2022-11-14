@@ -1,7 +1,7 @@
 package interfaces
 
 type ServerInterface interface {
-	SyncStart()
+	AsyncStart()
 	Stop()
 }
 
@@ -11,9 +11,9 @@ type Servers struct {
 	Servers []ServerInterface
 }
 
-func (s *Servers) SyncStart() {
+func (s *Servers) AsyncStart() {
 	for _, server := range s.Servers {
-		server.SyncStart()
+		server.AsyncStart()
 	}
 }
 

@@ -19,7 +19,7 @@ type RpcServer struct {
 	Apps *application.Apps
 }
 
-func (s *RpcServer) SyncStart() {
+func (s *RpcServer) AsyncStart() {
 	logs.Infof("[服务启动] [RPC] 服务地址: %s", s.port)
 	go func() {
 		l, err := net.Listen("tcp", ":"+s.port)

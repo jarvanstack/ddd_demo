@@ -22,7 +22,7 @@ func main() {
 	servers := NewServers(cfg)
 
 	// 启动 servers
-	servers.SyncStart()
+	servers.AsyncStart()
 
 	// 优雅退出
 	signals.WaitWith(servers.Stop)

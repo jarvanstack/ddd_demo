@@ -20,7 +20,7 @@ type WebServer struct {
 	Apps       *application.Apps
 }
 
-func (s *WebServer) SyncStart() {
+func (s *WebServer) AsyncStart() {
 	logs.Debugf("[服务启动] [rpc] 服务地址: %s", s.httpServer.Addr)
 	go func() {
 		if err := s.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
