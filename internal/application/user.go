@@ -6,10 +6,10 @@ import (
 )
 
 type UserAppInterface interface {
-	Login(*domain.C2S_Login) (*domain.S2C_Login, error)
-	Get(string) (*domain.S2C_UserInfo, error)
+	Login(*domain.LoginParams) (*domain.S2C_Login, error)
+	Get(*domain.UserID) (*domain.S2C_UserInfo, error)
 	GetAuthInfo(string) (*domain.AuthInfo, error)
-	Register(*domain.C2S_Register) (*domain.S2C_Login, error)
+	Register(*domain.RegisterParams) (*domain.S2C_Login, error)
 }
 
 var _ UserAppInterface = &UserApp{}
@@ -27,7 +27,7 @@ func NewUserApp(userRepo repository.UserInterface, authRepo repository.AuthInter
 }
 
 // Login
-func (u *UserApp) Login(login *domain.C2S_Login) (*domain.S2C_Login, error) {
+func (u *UserApp) Login(login *domain.LoginParams) (*domain.S2C_Login, error) {
 	// 登录
 	user, err := u.userRepo.GetUserByLoginParams(login)
 	if err != nil {
@@ -36,7 +36,7 @@ func (u *UserApp) Login(login *domain.C2S_Login) (*domain.S2C_Login, error) {
 
 	// 生成 token
 	authInfo := &domain.AuthInfo{
-		UserID: user.ID,
+		UserID: user.ID.Value(),
 	}
 	token, err := u.authRepo.Set(authInfo)
 	if err != nil {
@@ -52,7 +52,7 @@ func (u *UserApp) GetAuthInfo(token string) (*domain.AuthInfo, error) {
 }
 
 // Get 获取用户信息
-func (u *UserApp) Get(userID string) (*domain.S2C_UserInfo, error) {
+func (u *UserApp) Get(userID *domain.UserID) (*domain.S2C_UserInfo, error) {
 	user, err := u.userRepo.Get(userID)
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func (u *UserApp) Get(userID string) (*domain.S2C_UserInfo, error) {
 }
 
 // Register 注册 + 自动登录
-func (u *UserApp) Register(register *domain.C2S_Register) (*domain.S2C_Login, error) {
+func (u *UserApp) Register(register *domain.RegisterParams) (*domain.S2C_Login, error) {
 	// 检查是否已经注册
 	getUser, err := u.userRepo.GetUserByRegisterParams(register)
 	if getUser != nil {
@@ -77,7 +77,7 @@ func (u *UserApp) Register(register *domain.C2S_Register) (*domain.S2C_Login, er
 
 	// 生成 token
 	authInfo := &domain.AuthInfo{
-		UserID: user.ID,
+		UserID: user.ID.Value(),
 	}
 	token, err := u.authRepo.Set(authInfo)
 	if err != nil {

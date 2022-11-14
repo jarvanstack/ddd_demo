@@ -13,10 +13,23 @@ func (UserPO) TableName() string {
 }
 
 // ToDomain converts a UserRepo to a domain.User
-func (u *UserPO) ToDomain() *User {
-	return &User{
-		ID:       u.ID,
-		Username: u.Username,
-		Password: u.Password,
+func (u *UserPO) ToDomain() (*User, error) {
+	username, err := NewUsername(u.Username)
+	if err != nil {
+		return nil, err
 	}
+	password, err := NewPassword(u.Password)
+	if err != nil {
+		return nil, err
+	}
+	userID, err := NewUserID(u.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &User{
+		ID:       userID,
+		Username: username,
+		Password: password,
+	}, nil
 }

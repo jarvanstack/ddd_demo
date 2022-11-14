@@ -21,9 +21,8 @@ func NewUserServer(userApp *application.UserApp) *UserServerImpl {
 }
 
 func (u *UserServerImpl) GetUser(ctx context.Context, req *user.GetUserReq) (*user.GetUserResp, error) {
-	userID := req.GetId()
-
-	if err := domain.ValidateUserID(userID); err != nil {
+	userID, err := domain.NewUserID(req.Id)
+	if err != nil {
 		return nil, err
 	}
 

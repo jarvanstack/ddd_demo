@@ -23,12 +23,12 @@ func NewMysqlUserRepo(db *gorm.DB) *MysqlUserRepo {
 	return &MysqlUserRepo{db: db}
 }
 
-func (r *MysqlUserRepo) GetUserByLoginParams(params *domain.C2S_Login) (*domain.User, error) {
+func (r *MysqlUserRepo) GetUserByLoginParams(params *domain.LoginParams) (*domain.User, error) {
 	var userPO domain.UserPO
 	var db = r.db
 	var err error
 
-	if params.Username != "" {
+	if params.Username.Value() != "" {
 		err = db.Where("username = ? AND password = ?", params.Username, params.Password).First(&userPO).Error
 	}
 	// TODO: 支持其他参数查找
@@ -37,15 +37,15 @@ func (r *MysqlUserRepo) GetUserByLoginParams(params *domain.C2S_Login) (*domain.
 		return nil, ErrUserUsernameOrPassword
 	}
 
-	return userPO.ToDomain(), nil
+	return userPO.ToDomain()
 }
 
-func (r *MysqlUserRepo) GetUserByRegisterParams(params *domain.C2S_Register) (*domain.User, error) {
+func (r *MysqlUserRepo) GetUserByRegisterParams(params *domain.RegisterParams) (*domain.User, error) {
 	var userPO domain.UserPO
 	var db = r.db
 	var err error
 
-	if params.Username != "" {
+	if params.Username.Value() != "" {
 		err = db.Where("username = ?", params.Username).First(&userPO).Error
 	}
 	// TODO: 支持其他参数查找
@@ -54,18 +54,18 @@ func (r *MysqlUserRepo) GetUserByRegisterParams(params *domain.C2S_Register) (*d
 		return nil, ErrUserNotFound
 	}
 
-	return userPO.ToDomain(), nil
+	return userPO.ToDomain()
 }
 
-func (r *MysqlUserRepo) Get(id string) (*domain.User, error) {
+func (r *MysqlUserRepo) Get(id *domain.UserID) (*domain.User, error) {
 	var userPO domain.UserPO
 	var db = r.db
 
-	if err := db.Where("id = ?", id).First(&userPO).Error; err != nil {
+	if err := db.Where("id = ?", id.Value()).First(&userPO).Error; err != nil {
 		return nil, ErrUserNotFound
 	}
 
-	return userPO.ToDomain(), nil
+	return userPO.ToDomain()
 }
 
 func (r *MysqlUserRepo) Save(user *domain.User) (*domain.User, error) {
@@ -75,5 +75,5 @@ func (r *MysqlUserRepo) Save(user *domain.User) (*domain.User, error) {
 		return nil, err
 	}
 
-	return userPO.ToDomain(), nil
+	return userPO.ToDomain()
 }

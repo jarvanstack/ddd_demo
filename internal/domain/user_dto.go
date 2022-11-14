@@ -8,9 +8,20 @@ type C2S_Login struct {
 	Password string `json:"password"`
 }
 
-func (c *C2S_Login) Validate() error {
-	// 省略参数检查
-	return nil
+func (c *C2S_Login) ToDomain() (*LoginParams, error) {
+	username, err := NewUsername(c.Username)
+	if err != nil {
+		return nil, err
+	}
+	password, err := NewPassword(c.Password)
+	if err != nil {
+		return nil, err
+	}
+
+	return &LoginParams{
+		Username: username,
+		Password: password,
+	}, nil
 }
 
 // S2C_Login Web登录响应
@@ -30,19 +41,18 @@ type C2S_Register struct {
 	Password string `json:"password"`
 }
 
-func (c *C2S_Register) Validate() error {
-	// 省略参数检查
-	return nil
-}
-
-func (c *C2S_Register) ToDomain() *User {
-	return &User{
-		Username: c.Username,
-		Password: c.Password,
+func (c *C2S_Register) ToDomain() (*RegisterParams, error) {
+	username, err := NewUsername(c.Username)
+	if err != nil {
+		return nil, err
 	}
-}
+	password, err := NewPassword(c.Password)
+	if err != nil {
+		return nil, err
+	}
 
-func ValidateUserID(userID string) error {
-	// 省略参数检查
-	return nil
+	return &RegisterParams{
+		Username: username,
+		Password: password,
+	}, nil
 }

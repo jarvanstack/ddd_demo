@@ -2,6 +2,10 @@ package domain
 
 import "encoding/json"
 
+type AuthKey struct {
+	UserID string `json:"user_id"`
+}
+
 type AuthInfo struct {
 	UserID string `json:"user_id"`
 }

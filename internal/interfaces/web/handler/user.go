@@ -30,14 +30,11 @@ func (u *UserHandler) Login(c *gin.Context) {
 		return
 	}
 
-	// 参数验证
-	if err = req.Validate(); err != nil {
-		response.Err(c, http.StatusBadRequest, err.Error())
-		return
-	}
+	// 转化为领域对象 + 参数验证
+	loginParams, err := req.ToDomain()
 
 	// 调用应用层
-	user, err := u.UserApp.Login(req)
+	user, err := u.UserApp.Login(loginParams)
 	if err != nil {
 		response.Err(c, http.StatusInternalServerError, err.Error())
 		return
@@ -50,12 +47,13 @@ func (u *UserHandler) Login(c *gin.Context) {
 func (u *UserHandler) UserInfo(c *gin.Context) {
 	userIDStr := c.GetString(middleware.UserIDKey)
 
-	if err := domain.ValidateUserID(userIDStr); err != nil {
-		response.Err(c, http.StatusBadRequest, err.Error())
+	userID, err := domain.NewUserID(userIDStr)
+	if err != nil {
+		response.Err(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	userInfo, err := u.UserApp.Get(userIDStr)
+	userInfo, err := u.UserApp.Get(userID)
 	if err != nil {
 		response.Err(c, http.StatusInternalServerError, err.Error())
 		return
@@ -76,14 +74,11 @@ func (u *UserHandler) Register(c *gin.Context) {
 		return
 	}
 
-	// 参数验证
-	if err = req.Validate(); err != nil {
-		response.Err(c, http.StatusBadRequest, err.Error())
-		return
-	}
+	// 转化为领域对象 + 参数验证
+	registerParams, err := req.ToDomain()
 
 	// 调用应用层
-	user, err := u.UserApp.Register(req)
+	user, err := u.UserApp.Register(registerParams)
 	if err != nil {
 		response.Err(c, http.StatusInternalServerError, err.Error())
 		return
