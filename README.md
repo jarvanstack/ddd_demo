@@ -19,7 +19,7 @@
 * 注册 POST /auth/register
 * 登录 POST /auth/login
 * 获取用户信息 GET /user
-* 转账 POST /transfer 支持跨币种转账
+* 转账 POST /transfer
 
 ### 注册
 
@@ -31,7 +31,6 @@
 同理注册
 
 * 目前使用账号密码登录, 以后可能增加根据手机号邮箱等登录
-* 目前保存数据使用的 MySQL, 以后可能使用其他数据库
 
 ### 鉴权
 
@@ -44,13 +43,12 @@
 一个用户转账给另一个用户
 
 * 需要支持跨币种转账
-* 目前保存数据使用的 MySQL, 以后可能使用其他数据库
 * 目前转账的汇率从第三方 (微软的 api) 获取, 以后可能会考虑变更或者做缓存
 * 目前转账是不收取手续费的, 以后可能根据用户 vip 等级收取不同的手续费
 * 需要保存账单, 以便审计和对账用
 * 目前账单是保存在 MySQL 中, 以后可能会考虑保存到其他数据库或者消息队列消费
 
-### 暴露的接口
+### 接口
 
 * 目前提供 web 接口, 以后可能会提供 rpc 或者其他接口
 
@@ -97,4 +95,49 @@ docker-compose up -d
 make init
 # 启动项目
 make
+```
+
+## 转账设计
+
+UserA 转账给 UserB 1000 CNY
+
+领域核心设计如下(省略错误处理):
+
+```go
+func (*UserApp) UserApp.Transfer(formUserID *UserID, toUserID *UserID, amount *Money, currencyStr string) {
+    // 读数据
+    fromUser := userRepo.FindByID(formUserID)
+    toUser := userRepo.FindByID(toUserID)
+
+    // 获取汇率
+    toCurrency := NewCurrency(currencyStr)
+    rate := RateService.GetRate(fromUser.Currency, toCurrency)
+
+    // 转账
+    transferService.Transfer(fromUser, toUser, amount, rate)
+
+    // 保存数据
+    userRepo.Save(fromUser)
+    userRepo.Save(toUser)
+
+    // 保存账单
+    bill := NewBill(fromUser, toUser, amount, rate)
+    bill.Save(bill)
+}
+```
+
+transferService.Transfer(fromUser, toUser, amount, rate)
+
+```go
+func (*TransferService) Transfer(fromUser *User, toUser *User, amount *Money, rate *Rate) {
+    // 通过汇率转换金额
+    fromAmount := rate.Exchange(amount)
+
+    // 根据用户不同的 vip 等级, 计算手续费
+    fee := fromUser.CalcFee(fromAmount)
+
+    // 转账
+    fromUser.Money.Sub(fromAmount.Add(fee))
+    toUser.Money.Add(amount)
+}
 ```
