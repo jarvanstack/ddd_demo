@@ -8,7 +8,10 @@ import (
 	"time"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/gofrs/uuid"
+)
+
+const (
+	encryptKeyPrefix = "auth_"
 )
 
 // redis: cookie + session 认证
@@ -31,7 +34,7 @@ func NewRedisAuthRepo(redisConf config.Redis, expireTime time.Duration) reposito
 }
 
 func (r *RedisAuth) Set(auth *domain.AuthInfo) (string, error) {
-	key := uuid.Must(uuid.NewV4()).String()
+	key := encryptKeyPrefix + auth.UserID
 	status := r.c.Set(context.Background(), key, auth, r.expireTime)
 	return key, status.Err()
 }
