@@ -63,6 +63,12 @@ func (u *UserApp) Get(userID string) (*domain.S2C_UserInfo, error) {
 
 // Register 注册 + 自动登录
 func (u *UserApp) Register(register *domain.C2S_Register) (*domain.S2C_Login, error) {
+	// 检查是否已经注册
+	getUser, err := u.userRepo.GetUserByRegisterParams(register)
+	if getUser != nil {
+		return nil, err
+	}
+
 	// 注册
 	user, err := u.userRepo.Save(register.ToDomain())
 	if err != nil {

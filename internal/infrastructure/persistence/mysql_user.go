@@ -23,12 +23,35 @@ func NewMysqlUserRepo(db *gorm.DB) *MysqlUserRepo {
 	return &MysqlUserRepo{db: db}
 }
 
-func (r *MysqlUserRepo) GetUserByLoginParams(login *domain.C2S_Login) (*domain.User, error) {
+func (r *MysqlUserRepo) GetUserByLoginParams(params *domain.C2S_Login) (*domain.User, error) {
 	var userPO domain.UserPO
 	var db = r.db
+	var err error
 
-	if err := db.Where("username = ? AND password = ?", login.Username, login.Password).First(&userPO).Error; err != nil {
+	if params.Username != "" {
+		err = db.Where("username = ? AND password = ?", params.Username, params.Password).First(&userPO).Error
+	}
+	// TODO: 支持其他参数查找
+
+	if err != nil {
 		return nil, ErrUserUsernameOrPassword
+	}
+
+	return userPO.ToDomain(), nil
+}
+
+func (r *MysqlUserRepo) GetUserByRegisterParams(params *domain.C2S_Register) (*domain.User, error) {
+	var userPO domain.UserPO
+	var db = r.db
+	var err error
+
+	if params.Username != "" {
+		err = db.Where("username = ?", params.Username).First(&userPO).Error
+	}
+	// TODO: 支持其他参数查找
+
+	if err != nil {
+		return nil, ErrUserNotFound
 	}
 
 	return userPO.ToDomain(), nil
