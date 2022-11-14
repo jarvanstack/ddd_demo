@@ -48,7 +48,7 @@ func (r *MysqlUserRepo) Get(id string) (*domain.User, error) {
 func (r *MysqlUserRepo) Save(user *domain.User) (*domain.User, error) {
 	var userPO = user.ToPO()
 
-	if err := r.db.Create(&userPO).Error; err != nil {
+	if err := r.db.Save(&userPO).Error; err != nil {
 		return nil, err
 	}
 

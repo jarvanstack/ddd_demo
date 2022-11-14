@@ -7,7 +7,7 @@
 * 注册 POST /auth/register
 * 登录 POST /auth/login
 * 获取用户信息 GET /user
-* 转账 POST /transfer
+* 转账 POST /transfer 支持跨币种转账
 
 (2) 在核心领域层不变动的情况下增加 grpc server (一般可用于后台的操作)
 
@@ -57,3 +57,8 @@ make init
 # 启动项目
 make
 ```
+
+## 转账
+
+一个用户可以转账给另一个用户, 支持跨币种转账
+
