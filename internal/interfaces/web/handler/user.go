@@ -76,6 +76,10 @@ func (u *UserHandler) Register(c *gin.Context) {
 
 	// 转化为领域对象 + 参数验证
 	registerParams, err := req.ToDomain()
+	if err != nil {
+		response.Err(c, http.StatusBadRequest, err.Error())
+		return
+	}
 
 	// 调用应用层
 	user, err := u.UserApp.Register(registerParams)
