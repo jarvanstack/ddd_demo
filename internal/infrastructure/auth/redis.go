@@ -44,6 +44,7 @@ func (r *RedisAuth) Get(token string) (*domain.AuthInfo, error) {
 	err := r.c.Get(context.Background(), token).Scan(auth)
 	return auth, err
 }
+
 func (r *RedisAuth) Del(token string) error {
 	return r.c.Del(context.Background(), token).Err()
 }

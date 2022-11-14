@@ -5,7 +5,7 @@ app_name:=$(shell basename $(make_dir))
 .DEFAULT_GOAL := all
 
 .PHONY: all
-all: gen build run
+all: gen tidy build run
 
 ## init: Init project, create dadabase and import sql
 .PHONY: init
