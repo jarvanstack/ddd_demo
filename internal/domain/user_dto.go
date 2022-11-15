@@ -35,7 +35,7 @@ type S2C_UserInfo struct {
 	UserID   string `json:"user_id"`
 	Username string `json:"username"`
 	Currency string `json:"currency"`
-	Balance  string `json:"balance"`
+	Amount   string `json:"amount"`
 }
 
 type C2S_Register struct {
@@ -57,4 +57,10 @@ func (c *C2S_Register) ToDomain() (*RegisterParams, error) {
 		Username: username,
 		Password: password,
 	}, nil
+}
+
+type C2S_Transfer struct {
+	ToUserID string `json:"to_user_id"`
+	Amount   string `json:"amount"`
+	Currency string `json:"currency"`
 }

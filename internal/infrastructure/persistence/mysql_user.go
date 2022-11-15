@@ -13,7 +13,7 @@ var (
 	ErrUserNotFound           = errors.New("用户不存在")
 )
 
-var _ repository.UserInterface = &MysqlUserRepo{}
+var _ repository.UserRepo = &MysqlUserRepo{}
 
 type MysqlUserRepo struct {
 	db *gorm.DB

@@ -2,6 +2,7 @@ package application
 
 import (
 	"ddd_demo/internal/domain"
+	"ddd_demo/internal/domain/impl"
 	"ddd_demo/internal/domain/repository"
 	"errors"
 )
@@ -11,23 +12,28 @@ var (
 )
 
 type UserAppInterface interface {
-	Login(*domain.LoginParams) (*domain.S2C_Login, error)
-	Get(*domain.UserID) (*domain.S2C_UserInfo, error)
-	GetAuthInfo(string) (*domain.AuthInfo, error)
-	Register(*domain.RegisterParams) (*domain.S2C_Login, error)
+	Login(login *domain.LoginParams) (*domain.S2C_Login, error)
+	Get(userID *domain.UserID) (*domain.S2C_UserInfo, error)
+	GetAuthInfo(token string) (*domain.AuthInfo, error)
+	Register(register *domain.RegisterParams) (*domain.S2C_Login, error)
+	Transfer(form *domain.UserID, to *domain.UserID, amount *domain.Amount, currencyStr string) error
 }
 
 var _ UserAppInterface = &UserApp{}
 
 type UserApp struct {
-	userRepo repository.UserInterface
-	authRepo repository.AuthInterface
+	userRepo        repository.UserRepo
+	authRepo        repository.AuthInterface
+	transferService repository.TransferService
+	rateService     repository.RateService
 }
 
-func NewUserApp(userRepo repository.UserInterface, authRepo repository.AuthInterface) *UserApp {
+func NewUserApp(userRepo repository.UserRepo, authRepo repository.AuthInterface) *UserApp {
 	return &UserApp{
-		userRepo: userRepo,
-		authRepo: authRepo,
+		userRepo:        userRepo,
+		authRepo:        authRepo,
+		transferService: impl.NewTransferService(),
+		rateService:     impl.NewRateService(),
 	}
 }
 
@@ -70,7 +76,7 @@ func (u *UserApp) Get(userID *domain.UserID) (*domain.S2C_UserInfo, error) {
 func (u *UserApp) Register(register *domain.RegisterParams) (*domain.S2C_Login, error) {
 	// 检查是否已经注册
 	getUser, err := u.userRepo.GetUserByRegisterParams(register)
-	if getUser != nil {
+	if getUser != nil || err == nil {
 		return nil, ErrUserAlreadyExists
 	}
 
@@ -90,4 +96,43 @@ func (u *UserApp) Register(register *domain.RegisterParams) (*domain.S2C_Login, 
 	}
 
 	return user.ToLoginResp(token), nil
+}
+
+func (u *UserApp) Transfer(fromUserID, toUserID *domain.UserID, amount *domain.Amount, currencyStr string) error {
+	// 读数据
+	fromUser, err := u.userRepo.Get(fromUserID)
+	if err != nil {
+		return err
+	}
+
+	toUser, err := u.userRepo.Get(toUserID)
+	if err != nil {
+		return err
+	}
+
+	toCurrency, err := domain.NewCurrency(currencyStr)
+	if err != nil {
+		return err
+	}
+
+	rate, err := u.rateService.GetRate(fromUser.Currency, toCurrency)
+	if err != nil {
+		return err
+	}
+
+	// 转账
+	err = u.transferService.Transfer(fromUser, toUser, amount, rate)
+	if err != nil {
+		return err
+	}
+
+	// 保存数据
+	u.userRepo.Save(fromUser)
+	u.userRepo.Save(toUser)
+
+	// 保存账单
+	// bill := domain.NewBill(fromUser, toUser, amount, rate)
+	// u.billRepo.Save(bill)
+
+	return nil
 }

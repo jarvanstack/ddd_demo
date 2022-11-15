@@ -8,7 +8,7 @@ import (
 )
 
 type Repos struct {
-	UserRepo repository.UserInterface
+	UserRepo repository.UserRepo
 	AuthRepo repository.AuthInterface
 }
 

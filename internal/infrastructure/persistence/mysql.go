@@ -17,7 +17,7 @@ const (
 )
 
 type MysqlRepos struct {
-	UserRepo repository.UserInterface
+	UserRepo repository.UserRepo
 }
 
 func NewMysqlRepos(cfg *config.SugaredConfig) *MysqlRepos {

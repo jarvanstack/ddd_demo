@@ -34,13 +34,9 @@ func NewServers(cfg *config.SugaredConfig) interfaces.ServerInterface {
 	repos := infrastructure.NewRepos(cfg)
 	apps := application.NewApps(repos)
 
-	var servers []interfaces.ServerInterface
+	servers := interfaces.NewServers()
+	servers.AddServer(web.NewWebServer(cfg, apps))
+	servers.AddServer(rpc.NewRpcServer(cfg, apps))
 
-	// 初始化 WebServer
-	servers = append(servers, web.NewWebServer(cfg, apps))
-	servers = append(servers, rpc.NewRpcServer(cfg, apps))
-
-	return &interfaces.Servers{
-		Servers: servers,
-	}
+	return servers
 }

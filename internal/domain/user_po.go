@@ -18,7 +18,7 @@ type UserPO struct {
 	Username string
 	Password string
 	Currency string
-	Balance  decimal.Decimal `gorm:"type:decimal(20,2);"`
+	Amount   decimal.Decimal `gorm:"type:decimal(20,2);"`
 }
 
 func (UserPO) TableName() string {
@@ -46,8 +46,8 @@ func (u *UserPO) ToDomain() (*User, error) {
 		user.Currency, _ = NewCurrency(u.Currency)
 	}
 
-	if !u.Balance.IsZero() {
-		user.Balance, _ = NewBalance(u.Balance)
+	if !u.Amount.IsZero() {
+		user.Amount, _ = NewAmount(u.Amount)
 	}
 
 	return user, nil

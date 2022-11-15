@@ -101,17 +101,17 @@ make
 
 UserA 转账给 UserB 1000 CNY
 
-领域核心设计如下(省略错误处理):
+(1) 领域核心设计如下(省略错误处理):
 
 ```go
-func (*UserApp) UserApp.Transfer(formUserID *UserID, toUserID *UserID, amount *Balance, currencyStr string) {
+func (*UserApp) UserApp.Transfer(formUserID *UserID, toUserID *UserID, amount *Amount, AmountStr string) {
     // 读数据
-    fromUser := userRepo.FindByID(formUserID)
-    toUser := userRepo.FindByID(toUserID)
+    fromUser := userRepo.Get(formUserID)
+    toUser := userRepo.Get(toUserID)
 
     // 获取汇率
-    toCurrency := NewCurrency(currencyStr)
-    rate := RateService.GetRate(fromUser.Currency, toCurrency)
+    toAmount := NewAmount(AmountStr)
+    rate := RateService.GetRate(fromUser.Amount, toAmount)
 
     // 转账
     transferService.Transfer(fromUser, toUser, amount, rate)
@@ -122,14 +122,14 @@ func (*UserApp) UserApp.Transfer(formUserID *UserID, toUserID *UserID, amount *B
 
     // 保存账单
     bill := NewBill(fromUser, toUser, amount, rate)
-    bill.Save(bill)
+    billRepo.Save(bill)
 }
 ```
 
 transferService.Transfer(fromUser, toUser, amount, rate)
 
 ```go
-func (*TransferService) Transfer(fromUser *User, toUser *User, amount *Balance, rate *Rate) {
+func (*TransferService) Transfer(fromUser *User, toUser *User, amount *Amount, rate *Rate) {
     // 通过汇率转换金额
     fromAmount := rate.Exchange(amount)
 
@@ -137,7 +137,44 @@ func (*TransferService) Transfer(fromUser *User, toUser *User, amount *Balance, 
     fee := fromUser.CalcFee(fromAmount)
 
     // 转账
-    fromUser.Balance.Sub(fromAmount.Add(fee))
-    toUser.Balance.Add(amount)
+    fromUser.Amount.Sub(fromAmount.Add(fee))
+    toUser.Amount.Add(amount)
+}
+```
+
+(2) 设计 repo 接口
+
+```go
+type RateService interface {
+    GetRate(from *Amount, to *Amount) *Rate
+}
+
+type TransferService interface {
+    Transfer(fromUser *User, toUser *User, amount *Amount, rate *Rate)
+}
+
+type BillRepo interface {
+    Save(bill *Bill)
+}
+```
+
+(3) 设计 domain 类
+
+```go
+type Rate struct {
+    rate decimal.Decimal
+}
+
+func (r *Rate) Exchange(amount *Amount) *Amount {
+    return NewAmount(amount.Value().Mul(r.rate))
+}
+
+type Bill struct {
+    ID        *BillID
+    FromUser  *User
+    ToUser    *User
+    Amount    *Amount
+    Rate      *Rate
+    CreatedAt time.Time
 }
 ```

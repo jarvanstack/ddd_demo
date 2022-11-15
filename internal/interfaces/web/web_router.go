@@ -23,4 +23,5 @@ func WithRouter(s *WebServer) {
 
 	// 路由
 	api.GET("/user_info", userHandler.UserInfo)
+	api.POST("/transfer", userHandler.Transfer)
 }

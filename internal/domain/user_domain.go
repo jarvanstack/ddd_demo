@@ -1,7 +1,9 @@
 package domain
 
 import (
+	"errors"
 	"strconv"
+	"time"
 
 	"github.com/shopspring/decimal"
 )
@@ -13,7 +15,13 @@ var (
 	DefaultUsernameValue = ""
 	DefaultPasswordValue = ""
 	DefaultCurrencyValue = "CNY"
-	DefaultBalanceValue  = decimal.NewFromFloat(0)
+	DefaultAmountValue   = decimal.NewFromFloat(0)
+	DefaultBillIDValue   = "0"
+	DefaultFeeValue, _   = NewAmount(decimal.NewFromFloat(0))
+)
+
+var (
+	ErrAmountNotEnough = errors.New("余额不足")
 )
 
 type UserID struct {
@@ -92,23 +100,29 @@ func (u *Currency) Value() string {
 	return u.value
 }
 
-type Balance struct {
+type Amount struct {
 	value decimal.Decimal
 }
 
-func NewBalance(balance decimal.Decimal) (*Balance, error) {
+func NewAmount(amount decimal.Decimal) (*Amount, error) {
 	// 省略参数检查
-	return &Balance{
-		value: balance,
+	return &Amount{
+		value: amount,
 	}, nil
 }
 
-func (u *Balance) Value() decimal.Decimal {
-	if u == nil {
-		return DefaultBalanceValue
+func (m *Amount) Value() decimal.Decimal {
+	if m == nil {
+		return DefaultAmountValue
 	}
 
-	return u.value
+	return m.value
+}
+
+func (m *Amount) Add(amount *Amount) *Amount {
+	return &Amount{
+		value: m.value.Add(amount.value),
+	}
 }
 
 type User struct {
@@ -116,7 +130,32 @@ type User struct {
 	Username *Username
 	Password *Password
 	Currency *Currency
-	Balance  *Balance
+	Amount   *Amount
+}
+
+func (u *User) CalcFee(fromAmount *Amount) (*Amount, error) {
+	return NewAmount(fromAmount.Value().Mul(DefaultFeeValue.Value()))
+}
+
+// 付款
+func (u *User) Pay(amount *Amount) error {
+	// 省略参数检查
+	if u.Amount.Value().LessThan(amount.Value()) {
+		return ErrAmountNotEnough
+	}
+
+	u.Amount.value = u.Amount.Value().Sub(amount.Value())
+
+	return nil
+}
+
+// 收款
+func (u *User) Receive(amount *Amount) error {
+	// 省略参数检查
+
+	u.Amount.value = u.Amount.value.Add(amount.value)
+
+	return nil
 }
 
 func (u *User) ToLoginResp(token string) *S2C_Login {
@@ -131,7 +170,7 @@ func (u *User) ToUserInfo() *S2C_UserInfo {
 	return &S2C_UserInfo{
 		UserID:   u.ID.Value(),
 		Username: u.Username.Value(),
-		Balance:  u.Balance.Value().String(),
+		Amount:   u.Amount.Value().String(),
 		Currency: u.Currency.Value(),
 	}
 }
@@ -143,7 +182,7 @@ func (u *User) ToPO() *UserPO {
 		Username: u.Username.Value(),
 		Password: u.Password.Value(),
 		Currency: u.Currency.Value(),
-		Balance:  u.Balance.Value(),
+		Amount:   u.Amount.Value(),
 	}
 }
 
@@ -162,4 +201,47 @@ func (c *RegisterParams) ToDomain() *User {
 		Username: c.Username,
 		Password: c.Password,
 	}
+}
+
+type Rate struct {
+	rate decimal.Decimal
+}
+
+func NewRate(rate decimal.Decimal) (*Rate, error) {
+	// 省略参数检查
+	return &Rate{
+		rate: rate,
+	}, nil
+}
+
+func (r *Rate) Exchange(amount *Amount) (*Amount, error) {
+	return NewAmount(amount.Value().Mul(r.rate))
+}
+
+type BillID struct {
+	value string
+}
+
+func NewBillID(billID string) (*BillID, error) {
+	// 省略参数检查
+	return &BillID{
+		value: billID,
+	}, nil
+}
+
+func (b *BillID) Value() string {
+	if b == nil {
+		return DefaultBillIDValue
+	}
+
+	return b.value
+}
+
+type Bill struct {
+	ID        *BillID
+	FromUser  *User
+	ToUser    *User
+	Amount    *Amount
+	Rate      *Rate
+	CreatedAt time.Time
 }

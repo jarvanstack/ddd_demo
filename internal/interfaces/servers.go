@@ -22,3 +22,11 @@ func (s *Servers) Stop() {
 		server.Stop()
 	}
 }
+
+func NewServers() *Servers {
+	return &Servers{}
+}
+
+func (s *Servers) AddServer(server ServerInterface) {
+	s.Servers = append(s.Servers, server)
+}
