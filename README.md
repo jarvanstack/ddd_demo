@@ -56,24 +56,45 @@
 
 ```go
 ├── internal
-│   ├── application    // 应用层 (领域核心) 类似MVC中无状态的service
-│   │   ├── apps.go
-│   │   └── user.go
-│   ├── domain         // 领域层 (领域核心) 封装数据校验和无状态的逻辑
-│   │   ├── auth.go              // 验证领域对象
-│   │   ├── repository           // 基础设施层抽象的接口定义
-│   │   ├── user_domain.go       // 用户领域对象
-│   │   ├── user_dto.go          // 用户数据传输对象
-│   │   └── user_po.go           // 用户持久化对象
-│   ├── infrastructure  // 基础设施层, 实现基础设施层抽象的接口
-│   │   ├── auth                 // Auth 基础设施, 实现领域核心层的 AuthRepo 接口
-│   │   ├── persistence          // 持久化基础设施
-│   │   ├── repos.go
-│   │   └── tool    
-│   └── interfaces      // 外部接口层, 提供交互的接口
-│       ├── rpc                 // rpc 服务
-│       ├── servers.go          // 服务启动
-│       └── web                 // web 服务
+│   ├── bill    // 账单业务
+│   │   ├── app.go  // 账单 application 层
+│   │   ├── model
+│   │   │   ├── bill_entity.go // 账单 domain 实体
+│   │   │   └── bill_po.go     // 账单持久化对象
+│   │   └── repo.go // 账单 repository 层
+│   ├── common  // 公共模块
+│   │   ├── logs    // 日志
+│   │   │   ├── interface.go
+│   │   │   └── logger.go
+│   │   └── signals // 信号处理
+│   │       └── signal.go
+│   ├── servers // 服务
+│   │   ├── apps.go  // 整合需要的 app
+│   │   ├── repos.go // 整合需要的 repo
+│   │   ├── rpc     // rpc 服务
+│   │   │   ├── proto_file  // proto 文件
+│   │   │   ├── protos    // 生成的 proto 代码
+│   │   │   ├── rpc_router.go   // rpc 路由
+│   │   │   └── rpc_server.go   // rpc 服务
+│   │   ├── servers.go  // 整合需要的服务
+│   │   └── web    // web 服务
+│   │       ├── response        // web 响应封装
+│   │       ├── web_router.go   // web 路由
+│   │       └── web_server.go   // web 服务
+│   └── user    // 用户业务
+│       ├── app.go  // 用户 application 层
+│       ├── auth_repo.go    // 用户鉴权 repository 层
+│       ├── model
+│       │   ├── auth_entity.go  // 用户鉴权 domain 实体
+│       │   ├── user_dto.go    // 用户 dto (data transfer object), 比如 HTTP 请求的参数
+│       │   ├── user_entity.go  // 用户 domain 实体
+│       │   └── user_po.go    // 用户持久化对象
+│       ├── rate_service.go // 汇率服务
+│       ├── repo.go  // 用户 repository 层
+│       ├── rpc_server.go   // 用户 rpc 服务
+│       ├── transfer_service.go // 转账服务
+│       ├── web_auth_middleware.go  // web 鉴权中间件
+│       └── web_handler.go  // 用户 web 服务
 ```
 
 架构模型如下图所示:
@@ -104,25 +125,32 @@ UserA 转账给 UserB 1000 CNY
 (1) 领域核心设计如下(省略错误处理):
 
 ```go
-func (UserAppInterface) UserApp.Transfer(formUserID *UserID, toUserID *UserID, amount *Amount, AmountStr string) {
-    // 读数据
-    fromUser := userRepo.Get(formUserID)
-    toUser := userRepo.Get(toUserID)
+func (u *UserApp) Transfer(fromUserID, toUserID *model.UserID, amount *model.Amount, currencyStr string) error {
+	// 读数据
+	fromUser := u.userRepo.Get(fromUserID)
+	toUser := u.userRepo.Get(toUserID)
+	toCurrency := model.NewCurrency(currencyStr)
 
     // 获取汇率
-    toAmount := NewAmount(AmountStr)
-    rate := RateService.GetRate(fromUser.Amount, toAmount)
+	rate := u.rateService.GetRate(fromUser.Currency, toCurrency)
 
-    // 转账
-    transferService.Transfer(fromUser, toUser, amount, rate)
+	// 转账
+	u.transferService.Transfer(fromUser, toUser, amount, rate)
 
-    // 保存数据
-    userRepo.Save(fromUser)
-    userRepo.Save(toUser)
+	// 保存数据
+	u.userRepo.Save(fromUser)
+	u.userRepo.Save(toUser)
 
-    // 保存账单
-    bill := NewBill(fromUser, toUser, amount, rate)
-    billRepo.Save(bill)
+	// 保存账单
+	bill := &bill_model.Bill{
+		FromUserID: fromUser.ID,
+		ToUserID:   toUser.ID,
+		Amount:     amount,
+		Currency:   toCurrency,
+	}
+	u.billApp.CreateBill(bill)
+
+	return nil
 }
 ```
 
@@ -130,15 +158,18 @@ transferService.Transfer(fromUser, toUser, amount, rate)
 
 ```go
 func (*TransferService) Transfer(fromUser *User, toUser *User, amount *Amount, rate *Rate) {
-    // 通过汇率转换金额
-    fromAmount := rate.Exchange(amount)
+	// 通过汇率转换金额
+	fromAmount := rate.Exchange(amount)
 
-    // 根据用户不同的 vip 等级, 计算手续费
-    fee := fromUser.CalcFee(fromAmount)
+	// 根据用户不同的 vip 等级, 计算手续费
+	fee := fromUser.CalcFee(fromAmount)
+    
+    // 计算总金额
+	fromTotalAmount := fromAmount.Add(fee)
 
-    // 转账
-    fromUser.Amount.Sub(fromAmount.Add(fee))
-    toUser.Amount.Add(amount)
+	// 转账
+	fromUser.Pay(fromTotalAmount)
+	toUser.Receive(amount)
 }
 ```
 
