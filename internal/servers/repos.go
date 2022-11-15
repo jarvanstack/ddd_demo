@@ -4,6 +4,7 @@ import (
 	"ddd_demo/config"
 	"fmt"
 
+	"ddd_demo/internal/bill"
 	"ddd_demo/internal/user"
 
 	"github.com/go-redis/redis/v8"
@@ -21,6 +22,7 @@ const (
 type Repos struct {
 	UserRepo user.UserRepo
 	AuthRepo user.AuthInterface
+	BillRepo bill.BillRepo
 }
 
 func NewDB(cfg *config.SugaredConfig) *gorm.DB {
@@ -48,6 +50,7 @@ func NewRepos(cfg *config.SugaredConfig) *Repos {
 	// 持久化类型的 repo
 	db := NewDB(cfg)
 	userRepo := user.NewMysqlUserRepo(db)
+	billRepo := bill.NewMysqlBillRepo(db)
 
 	// auth 策略
 	var authRepo user.AuthInterface
@@ -60,5 +63,6 @@ func NewRepos(cfg *config.SugaredConfig) *Repos {
 	return &Repos{
 		UserRepo: userRepo,
 		AuthRepo: authRepo,
+		BillRepo: billRepo,
 	}
 }

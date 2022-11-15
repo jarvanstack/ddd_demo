@@ -8,8 +8,8 @@ type Apps struct {
 	UserApp user.UserAppInterface
 }
 
-func NewApps(apps *Repos) *Apps {
+func NewApps(repos *Repos) *Apps {
 	return &Apps{
-		UserApp: user.NewUserApp(apps.UserRepo, apps.AuthRepo),
+		UserApp: user.NewUserApp(repos.UserRepo, repos.AuthRepo, repos.BillRepo),
 	}
 }

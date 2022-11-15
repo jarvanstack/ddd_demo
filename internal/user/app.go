@@ -1,6 +1,8 @@
 package user
 
 import (
+	"ddd_demo/internal/bill"
+	bill_model "ddd_demo/internal/bill/model"
 	"ddd_demo/internal/user/model"
 	"errors"
 )
@@ -22,14 +24,16 @@ type UserApp struct {
 	authRepo        AuthInterface
 	transferService TransferService
 	rateService     RateService
+	billApp         bill.BillAppInterface
 }
 
-func NewUserApp(userRepo UserRepo, authRepo AuthInterface) UserAppInterface {
+func NewUserApp(userRepo UserRepo, authRepo AuthInterface, billRepo bill.BillRepo) UserAppInterface {
 	return &UserApp{
 		userRepo:        userRepo,
 		authRepo:        authRepo,
 		transferService: NewTransferService(),
 		rateService:     NewRateService(),
+		billApp:         bill.NewBillApp(billRepo),
 	}
 }
 
@@ -127,8 +131,16 @@ func (u *UserApp) Transfer(fromUserID, toUserID *model.UserID, amount *model.Amo
 	u.userRepo.Save(toUser)
 
 	// 保存账单
-	// bill := model.NewBill(fromUser, toUser, amount, rate)
-	// u.billRepo.Save(bill)
+	bill := &bill_model.Bill{
+		FromUserID: fromUser.ID,
+		ToUserID:   toUser.ID,
+		Amount:     amount,
+		Currency:   toCurrency,
+	}
+	err = u.billApp.CreateBill(bill)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

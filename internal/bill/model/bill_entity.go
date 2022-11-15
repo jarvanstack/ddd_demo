@@ -1,8 +1,6 @@
 package model
 
 import (
-	"time"
-
 	user_model "ddd_demo/internal/user/model"
 )
 
@@ -30,10 +28,19 @@ func (b *BillID) Value() string {
 }
 
 type Bill struct {
-	ID        *BillID
-	FromUser  *user_model.User
-	ToUser    *user_model.User
-	Amount    *user_model.Amount
-	Rate      *user_model.Rate
-	CreatedAt time.Time
+	ID         *BillID
+	FromUserID *user_model.UserID
+	ToUserID   *user_model.UserID
+	Amount     *user_model.Amount
+	Currency   *user_model.Currency
+}
+
+func (b *Bill) ToPO() *BillPO {
+	return &BillPO{
+		ID:         b.ID.Value(),
+		FromUserID: b.FromUserID.Value(),
+		ToUserID:   b.ToUserID.Value(),
+		Amount:     b.Amount.Value().String(),
+		Currency:   b.Currency.Value(),
+	}
 }
