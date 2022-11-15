@@ -10,7 +10,7 @@ mysql:
   password: "123456"
 auth:
   # jwt | redis
-  active: "redis"
+  active: "jwt"
   expireTime: "2h"
   # active = jwt 时候生效
   privateKey: "123456"

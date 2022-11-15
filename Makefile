@@ -15,7 +15,7 @@ init:
 ## gen: Gemerate protobuf files.
 .PHONY: gen
 gen:
-	cd internal/interfaces/rpc/proto_file/ && \
+	cd internal/servers/rpc/proto_file/ && \
 	protoc -I ./ --go_out=./ --go-grpc_out=./ ./in/* && \
 	rm -rf ../protos && cp -r protos/ ../ && rm -rf protos && \
 	cd $(make_dir)
@@ -28,7 +28,7 @@ tidy:
 ## build: Build app
 .PHONY: build
 build:
-	go build -o ./bin/$(app_name) -gcflags "-N -l" -race cmd/main.go
+	go build -o ./bin/$(app_name) -gcflags "-N -l" -race ./main.go
 
 ## run: Run app
 .PHONY: run

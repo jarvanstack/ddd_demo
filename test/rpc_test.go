@@ -2,7 +2,7 @@ package test
 
 import (
 	"context"
-	"ddd_demo/internal/interfaces/rpc/protos/in/user"
+	pb_user "ddd_demo/internal/servers/rpc/protos/in/user"
 	"fmt"
 	"testing"
 
@@ -16,7 +16,7 @@ func Test_Rpc_UserInfo(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	resp, err := user.NewUserClient(conn).GetUser(context.Background(), &user.GetUserReq{
+	resp, err := pb_user.NewUserClient(conn).GetUser(context.Background(), &pb_user.GetUserReq{
 		Id: "1",
 	})
 	if err != nil {
