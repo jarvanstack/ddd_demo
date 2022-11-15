@@ -8,6 +8,14 @@ import (
 
 // domain 领域对象
 
+var (
+	DefaultUserIDValue   = "0"
+	DefaultUsernameValue = ""
+	DefaultPasswordValue = ""
+	DefaultCurrencyValue = "CNY"
+	DefaultBalanceValue  = decimal.NewFromFloat(0)
+)
+
 type UserID struct {
 	value string
 }
@@ -21,7 +29,7 @@ func NewUserID(userID string) (*UserID, error) {
 
 func (u *UserID) Value() string {
 	if u == nil {
-		return ""
+		return DefaultUserIDValue
 	}
 
 	return u.value
@@ -40,7 +48,7 @@ func NewUsername(username string) (*Username, error) {
 
 func (u *Username) Value() string {
 	if u == nil {
-		return ""
+		return DefaultUsernameValue
 	}
 
 	return u.value
@@ -59,7 +67,7 @@ func NewPassword(password string) (*Password, error) {
 
 func (u *Password) Value() string {
 	if u == nil {
-		return ""
+		return DefaultPasswordValue
 	}
 
 	return u.value
@@ -78,7 +86,7 @@ func NewCurrency(currency string) (*Currency, error) {
 
 func (u *Currency) Value() string {
 	if u == nil {
-		return ""
+		return DefaultCurrencyValue
 	}
 
 	return u.value
@@ -97,7 +105,7 @@ func NewBalance(balance decimal.Decimal) (*Balance, error) {
 
 func (u *Balance) Value() decimal.Decimal {
 	if u == nil {
-		return decimal.NewFromFloat(0)
+		return DefaultBalanceValue
 	}
 
 	return u.value
