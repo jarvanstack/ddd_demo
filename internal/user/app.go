@@ -9,6 +9,14 @@ var (
 	ErrUserAlreadyExists = errors.New("用户已存在")
 )
 
+type UserAppInterface interface {
+	Login(login *model.LoginParams) (*model.S2C_Login, error)
+	GetAuthInfo(token string) (*model.AuthInfo, error)
+	Get(userID *model.UserID) (*model.S2C_UserInfo, error)
+	Register(register *model.RegisterParams) (*model.S2C_Login, error)
+	Transfer(fromUserID, toUserID *model.UserID, amount *model.Amount, currencyStr string) error
+}
+
 type UserApp struct {
 	userRepo        UserRepo
 	authRepo        AuthInterface
@@ -16,7 +24,7 @@ type UserApp struct {
 	rateService     RateService
 }
 
-func NewUserApp(userRepo UserRepo, authRepo AuthInterface) *UserApp {
+func NewUserApp(userRepo UserRepo, authRepo AuthInterface) UserAppInterface {
 	return &UserApp{
 		userRepo:        userRepo,
 		authRepo:        authRepo,

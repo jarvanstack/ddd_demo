@@ -13,10 +13,10 @@ const (
 )
 
 type AuthMiddleware struct {
-	UserApp *UserApp
+	UserApp UserAppInterface
 }
 
-func NewAuthMiddleware(userApp *UserApp) *AuthMiddleware {
+func NewAuthMiddleware(userApp UserAppInterface) *AuthMiddleware {
 	return &AuthMiddleware{
 		UserApp: userApp,
 	}

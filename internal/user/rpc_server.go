@@ -10,11 +10,11 @@ import (
 var _ pb.UserServer = &UserRpcServerImpl{}
 
 type UserRpcServerImpl struct {
-	UserApp *UserApp
+	UserApp UserAppInterface
 	pb.UnimplementedUserServer
 }
 
-func NewUserServer(userApp *UserApp) *UserRpcServerImpl {
+func NewUserServer(userApp UserAppInterface) *UserRpcServerImpl {
 	return &UserRpcServerImpl{
 		UserApp: userApp,
 	}

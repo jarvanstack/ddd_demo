@@ -5,7 +5,7 @@ import (
 )
 
 type Apps struct {
-	UserApp *user.UserApp
+	UserApp user.UserAppInterface
 }
 
 func NewApps(apps *Repos) *Apps {

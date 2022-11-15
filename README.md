@@ -104,7 +104,7 @@ UserA 转账给 UserB 1000 CNY
 (1) 领域核心设计如下(省略错误处理):
 
 ```go
-func (*UserApp) UserApp.Transfer(formUserID *UserID, toUserID *UserID, amount *Amount, AmountStr string) {
+func (UserAppInterface) UserApp.Transfer(formUserID *UserID, toUserID *UserID, amount *Amount, AmountStr string) {
     // 读数据
     fromUser := userRepo.Get(formUserID)
     toUser := userRepo.Get(toUserID)
