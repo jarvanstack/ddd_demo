@@ -1,5 +1,11 @@
 package domain
 
+import (
+	"strconv"
+
+	"github.com/shopspring/decimal"
+)
+
 // domain 领域对象
 
 type UserID struct {
@@ -14,6 +20,10 @@ func NewUserID(userID string) (*UserID, error) {
 }
 
 func (u *UserID) Value() string {
+	if u == nil {
+		return ""
+	}
+
 	return u.value
 }
 
@@ -29,6 +39,10 @@ func NewUsername(username string) (*Username, error) {
 }
 
 func (u *Username) Value() string {
+	if u == nil {
+		return ""
+	}
+
 	return u.value
 }
 
@@ -44,6 +58,48 @@ func NewPassword(password string) (*Password, error) {
 }
 
 func (u *Password) Value() string {
+	if u == nil {
+		return ""
+	}
+
+	return u.value
+}
+
+type Currency struct {
+	value string
+}
+
+func NewCurrency(currency string) (*Currency, error) {
+	// 省略参数检查
+	return &Currency{
+		value: currency,
+	}, nil
+}
+
+func (u *Currency) Value() string {
+	if u == nil {
+		return ""
+	}
+
+	return u.value
+}
+
+type Balance struct {
+	value decimal.Decimal
+}
+
+func NewBalance(balance decimal.Decimal) (*Balance, error) {
+	// 省略参数检查
+	return &Balance{
+		value: balance,
+	}, nil
+}
+
+func (u *Balance) Value() decimal.Decimal {
+	if u == nil {
+		return decimal.NewFromFloat(0)
+	}
+
 	return u.value
 }
 
@@ -51,6 +107,8 @@ type User struct {
 	ID       *UserID
 	Username *Username
 	Password *Password
+	Currency *Currency
+	Balance  *Balance
 }
 
 func (u *User) ToLoginResp(token string) *S2C_Login {
@@ -65,14 +123,19 @@ func (u *User) ToUserInfo() *S2C_UserInfo {
 	return &S2C_UserInfo{
 		UserID:   u.ID.Value(),
 		Username: u.Username.Value(),
+		Balance:  u.Balance.Value().String(),
+		Currency: u.Currency.Value(),
 	}
 }
 
 func (u *User) ToPO() *UserPO {
+	id, _ := strconv.ParseInt(u.ID.Value(), 10, 64)
 	return &UserPO{
-		ID:       u.ID.Value(),
+		ID:       id,
 		Username: u.Username.Value(),
 		Password: u.Password.Value(),
+		Currency: u.Currency.Value(),
+		Balance:  u.Balance.Value(),
 	}
 }
 

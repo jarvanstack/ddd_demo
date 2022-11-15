@@ -3,6 +3,11 @@ package application
 import (
 	"ddd_demo/internal/domain"
 	"ddd_demo/internal/domain/repository"
+	"errors"
+)
+
+var (
+	ErrUserAlreadyExists = errors.New("用户已存在")
 )
 
 type UserAppInterface interface {
@@ -66,7 +71,7 @@ func (u *UserApp) Register(register *domain.RegisterParams) (*domain.S2C_Login, 
 	// 检查是否已经注册
 	getUser, err := u.userRepo.GetUserByRegisterParams(register)
 	if getUser != nil {
-		return nil, err
+		return nil, ErrUserAlreadyExists
 	}
 
 	// 注册

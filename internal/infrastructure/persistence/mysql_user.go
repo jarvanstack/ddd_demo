@@ -29,7 +29,7 @@ func (r *MysqlUserRepo) GetUserByLoginParams(params *domain.LoginParams) (*domai
 	var err error
 
 	if params.Username.Value() != "" {
-		err = db.Where("username = ? AND password = ?", params.Username, params.Password).First(&userPO).Error
+		err = db.Where("username = ? AND password = ?", params.Username.Value(), params.Password.Value()).First(&userPO).Error
 	}
 	// TODO: 支持其他参数查找
 
@@ -46,7 +46,7 @@ func (r *MysqlUserRepo) GetUserByRegisterParams(params *domain.RegisterParams) (
 	var err error
 
 	if params.Username.Value() != "" {
-		err = db.Where("username = ?", params.Username).First(&userPO).Error
+		err = db.Where("username = ?", params.Username.Value()).First(&userPO).Error
 	}
 	// TODO: 支持其他参数查找
 

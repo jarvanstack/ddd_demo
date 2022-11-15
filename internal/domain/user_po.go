@@ -1,11 +1,24 @@
 package domain
 
+import (
+	"errors"
+	"strconv"
+
+	"github.com/shopspring/decimal"
+)
+
+var (
+	ErrUserIDIsEmpty = errors.New("user id is empty")
+)
+
 // po (presentation object) 持久化对象
 
 type UserPO struct {
-	ID       string `json:"user_id"`
-	Username string `json:"username"`
-	Password string `json:"password"`
+	ID       int64
+	Username string
+	Password string
+	Currency string
+	Balance  decimal.Decimal `gorm:"type:decimal(20,2);"`
 }
 
 func (UserPO) TableName() string {
@@ -14,22 +27,28 @@ func (UserPO) TableName() string {
 
 // ToDomain converts a UserRepo to a domain.User
 func (u *UserPO) ToDomain() (*User, error) {
-	username, err := NewUsername(u.Username)
-	if err != nil {
-		return nil, err
-	}
-	password, err := NewPassword(u.Password)
-	if err != nil {
-		return nil, err
-	}
-	userID, err := NewUserID(u.ID)
-	if err != nil {
-		return nil, err
+	user := &User{}
+	if u.ID == 0 {
+		return nil, ErrUserIDIsEmpty
 	}
 
-	return &User{
-		ID:       userID,
-		Username: username,
-		Password: password,
-	}, nil
+	user.ID, _ = NewUserID(strconv.FormatInt(u.ID, 10))
+
+	if u.Username != "" {
+		user.Username, _ = NewUsername(u.Username)
+	}
+
+	if u.Password != "" {
+		user.Password, _ = NewPassword(u.Password)
+	}
+
+	if u.Currency != "" {
+		user.Currency, _ = NewCurrency(u.Currency)
+	}
+
+	if !u.Balance.IsZero() {
+		user.Balance, _ = NewBalance(u.Balance)
+	}
+
+	return user, nil
 }

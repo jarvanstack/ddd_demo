@@ -104,7 +104,7 @@ UserA 转账给 UserB 1000 CNY
 领域核心设计如下(省略错误处理):
 
 ```go
-func (*UserApp) UserApp.Transfer(formUserID *UserID, toUserID *UserID, amount *Money, currencyStr string) {
+func (*UserApp) UserApp.Transfer(formUserID *UserID, toUserID *UserID, amount *Balance, currencyStr string) {
     // 读数据
     fromUser := userRepo.FindByID(formUserID)
     toUser := userRepo.FindByID(toUserID)
@@ -129,7 +129,7 @@ func (*UserApp) UserApp.Transfer(formUserID *UserID, toUserID *UserID, amount *M
 transferService.Transfer(fromUser, toUser, amount, rate)
 
 ```go
-func (*TransferService) Transfer(fromUser *User, toUser *User, amount *Money, rate *Rate) {
+func (*TransferService) Transfer(fromUser *User, toUser *User, amount *Balance, rate *Rate) {
     // 通过汇率转换金额
     fromAmount := rate.Exchange(amount)
 
@@ -137,7 +137,7 @@ func (*TransferService) Transfer(fromUser *User, toUser *User, amount *Money, ra
     fee := fromUser.CalcFee(fromAmount)
 
     // 转账
-    fromUser.Money.Sub(fromAmount.Add(fee))
-    toUser.Money.Add(amount)
+    fromUser.Balance.Sub(fromAmount.Add(fee))
+    toUser.Balance.Add(amount)
 }
 ```

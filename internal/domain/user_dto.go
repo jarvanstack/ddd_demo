@@ -34,6 +34,8 @@ type S2C_Login struct {
 type S2C_UserInfo struct {
 	UserID   string `json:"user_id"`
 	Username string `json:"username"`
+	Currency string `json:"currency"`
+	Balance  string `json:"balance"`
 }
 
 type C2S_Register struct {
