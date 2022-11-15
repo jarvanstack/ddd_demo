@@ -5,14 +5,14 @@ option go_package = "protos/in/user";
 package user;
 
 service User {
-    rpc GetUser(GetUserReq) returns (GetUserResp) {}
+    rpc UserInfo(G2S_UserInfo) returns (S2G_UserInfo) {}
 }
 
-message GetUserReq {
+message G2S_UserInfo {
     string id = 1;
 }
 
-message GetUserResp {
+message S2G_UserInfo {
     UserDTO user = 1;
 }
 

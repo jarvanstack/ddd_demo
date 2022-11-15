@@ -20,7 +20,7 @@ func NewUserServer(userApp UserAppInterface) *UserRpcServerImpl {
 	}
 }
 
-func (u *UserRpcServerImpl) GetUser(ctx context.Context, req *user.GetUserReq) (*user.GetUserResp, error) {
+func (u *UserRpcServerImpl) GetUser(ctx context.Context, req *user.G2S_UserInfo) (*user.S2G_UserInfo, error) {
 	userID, err := model.NewUserID(req.Id)
 	if err != nil {
 		return nil, err
@@ -34,8 +34,8 @@ func (u *UserRpcServerImpl) GetUser(ctx context.Context, req *user.GetUserReq) (
 	return ToUserResp(userInfo), nil
 }
 
-func ToUserResp(u *model.S2C_UserInfo) *user.GetUserResp {
-	return &user.GetUserResp{
+func ToUserResp(u *model.S2C_UserInfo) *user.S2G_UserInfo {
+	return &user.S2G_UserInfo{
 		User: &user.UserDTO{
 			Id:       u.UserID,
 			Username: u.Username,
