@@ -113,7 +113,7 @@
 # 准备环境 (启动mysql, redis)
 docker-compose up -d
 # 准备数据库 (创建数据库, 创建表)
-make init
+make exec.sql
 # 启动项目
 make
 ```
