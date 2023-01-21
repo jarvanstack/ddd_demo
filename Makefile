@@ -7,10 +7,15 @@ app_name:=$(shell basename $(make_dir))
 .PHONY: all
 all: gen tidy build run
 
-## init: Init project, create dadabase and import sql
-.PHONY: init
-init:
-	cd job/init_mysql/ && go run . && cd $(make_dir)
+## exec.sql: Create dadabase and import sql
+.PHONY: exec_sql
+exec.sql:
+	cd tools/exec_sql/ && go run . && cd $(make_dir)
+
+## exec.sql.force: Drop database and create dadabase and import sql
+.PHONY: exec.sql.force
+exec.sql.force:
+	cd tools/exec_sql/ && go run . -f true && cd $(make_dir)
 
 ## gen: Gemerate protobuf files.
 .PHONY: gen
