@@ -12,4 +12,4 @@ services:
       MYSQL_ROOT_PASSWORD: 123456
       MYSQL_DATABASE: ddd_demo
     ports:
-      - "3306:3306"
+            - "13306:3306"

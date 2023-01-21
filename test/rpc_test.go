@@ -16,7 +16,7 @@ func Test_Rpc_UserInfo(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	resp, err := pb_user.NewUserClient(conn).GetUser(context.Background(), &pb_user.GetUserReq{
+	resp, err := pb_user.NewUserClient(conn).UserInfo(context.Background(), &pb_user.G2S_UserInfo{
 		Id: "1",
 	})
 	if err != nil {
